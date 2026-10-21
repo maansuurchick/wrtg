@@ -1,5 +1,7 @@
 name: build-armv7-soft
 on: workflow_dispatch
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -11,7 +13,8 @@ jobs:
           cargo zigbuild --release -p wrtg --target armv7-unknown-linux-musleabi
           readelf -A target/armv7-unknown-linux-musleabi/release/wrtg | head -20
           ls -l target/armv7-unknown-linux-musleabi/release/wrtg
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wrtg-armv7-soft
-          path: target/armv7-unknown-linux-musleabi/release/wrtg
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp target/armv7-unknown-linux-musleabi/release/wrtg wrtg-armv7-soft
+          gh release create softfloat-1 wrtg-armv7-soft --title softfloat-1 --notes "armv7 soft-float" || gh release upload softfloat-1 wrtg-armv7-soft --clobber
